@@ -4,20 +4,18 @@ from datasets import Dataset, DatasetDict
 from sklearn.model_selection import train_test_split
 
 
-def process_data(processor):
-    def __process_data(examples):
-        images = [Image.open(f"dataset/images/{img}").convert("RGB") for img in examples["image"]]
-        inputs = processor(images=images, text=examples["caption"], padding="max_length", truncation=True, return_tensors="pt")
-        inputs["decoder_input_ids"] = inputs["input_ids"].clone()
+def process_data(examples, processor):
+    images = [Image.open(f"dataset/images/{img}").convert("RGB") for img in examples["image"]]
+    inputs = processor(images=images, text=examples["caption"], padding="max_length", truncation=True, return_tensors="pt", max_length=512)
+    inputs["decoder_input_ids"] = inputs["input_ids"].clone()
 
-        return {
-            "pixel_values": inputs["pixel_values"],
-            "input_ids": inputs["input_ids"],
-            "decoder_input_ids": inputs["decoder_input_ids"],
-            "attention_mask": inputs["attention_mask"],
-            "labels": inputs["input_ids"].clone(),
-        }
-    return __process_data
+    return {
+        "pixel_values": inputs["pixel_values"],
+        "input_ids": inputs["input_ids"],
+        "decoder_input_ids": inputs["decoder_input_ids"],
+        "attention_mask": inputs["attention_mask"],
+        "labels": inputs["labels"],  # Ensure labels match input_ids
+    }
 
 
 def get_tokenized_dataset(processor):
@@ -26,8 +24,8 @@ def get_tokenized_dataset(processor):
     train_dataset = Dataset.from_pandas(train_df)
     val_dataset = Dataset.from_pandas(val_df)
     dataset = DatasetDict({
-        "train": train_dataset.map(process_data(processor), batched=True),
-        "validation": val_dataset.map(process_data(processor), batched=True)
+        "train": train_dataset.map(lambda x: process_data(x, processor), batched=True),
+        "validation": val_dataset.map(lambda x: process_data(x, processor), batched=True)
     })
     print(dataset)
     return dataset
