@@ -1,0 +1,9 @@
+torch
+torchvision
+transformers~=4.49.0
+datasets~=3.4.0
+flask~=3.1.0
+pillow~=11.1.0
+timm
+peft
+pandas~=2.2.3
