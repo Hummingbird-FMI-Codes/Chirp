@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 
 def process_data(examples, processor):
     images = [Image.open(f"dataset/images/{img}").convert("RGB") for img in examples["image"]]
-    inputs = processor(images=images, text=examples["caption"], padding="max_length", truncation=True, return_tensors="pt", max_length=512)
+    inputs = processor(images=images, text=examples["caption"], padding="max_length", truncation=True, return_tensors="pt", max_length=1024)
     inputs["decoder_input_ids"] = inputs["input_ids"].clone()
 
     return {
@@ -14,7 +14,7 @@ def process_data(examples, processor):
         "input_ids": inputs["input_ids"],
         "decoder_input_ids": inputs["decoder_input_ids"],
         "attention_mask": inputs["attention_mask"],
-        "labels": inputs["labels"],  # Ensure labels match input_ids
+        "labels": inputs["input_ids"].clone(),
     }
 
 
