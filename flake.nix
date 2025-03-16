@@ -30,6 +30,7 @@
               pillow
               transformers
               torchvision
+              pydantic
             ]))
           ];
           # shellHook = ''
