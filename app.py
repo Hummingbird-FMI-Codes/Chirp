@@ -33,7 +33,9 @@ def upload_image():
 
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
+    print("1")
     image = Image.open(io.BytesIO(file.read())).convert("RGB")
+    print("2")
     try:
         data = UploadImageDto(
             timestamp=request.form['timestamp'],
@@ -44,15 +46,23 @@ def upload_image():
         return jsonify({"error": "Invalid input", "details": str(e)}), 400
 
     label = llm.get_label(image)
-    response = requests.post("http://localhost:3000/animal-data", json={
-        "timestamp": data.timestamp,
-        "lat": data.lat,
-        "lng": data.lng,
-        "label": label,
-    })
+    if label == "NOTHING":
+        response = requests.post("http://localhost:3000/animal-data", json={
+            "timestamp": data.timestamp,
+            "lat": data.lat,
+            "lng": data.lng,
+        })
+    else:
+        response = requests.post("http://localhost:3000/animal-data", json={
+            "timestamp": data.timestamp,
+            "lat": data.lat,
+            "lng": data.lng,
+            "specimenName": label,
+        })
+        
 
-    res=None
-    code=None
+    # res=None
+    # code=None
 
     if response.status_code == 201:
         res = jsonify({"message": "File processed successfully", "external_response": response.json()})
