@@ -1,5 +1,7 @@
-from flask import Flask, request, abort, jsonify
+import io
 
+from PIL import Image
+from flask import Flask, request, abort, jsonify
 from model.model import ImageCaptioningLLM
 
 import requests
@@ -16,7 +18,7 @@ class UploadImageDto(BaseModel):
 
 
 @app.route('/images', methods=["POST"])
-def hello_world():
+def generateCaptionTest():
     imagePath = request.get_json()["imagePath"]
     if not imagePath:
         abort(400)
@@ -49,6 +51,22 @@ def upload_image():
         return jsonify({"message": "File processed successfully", "external_response": response.json()}), 200
     else:
         return jsonify({"error": "Failed to process file", "external_response": response.text}), response.status_code
+
+
+@app.route('/upload-image', methods=['POST'])
+def upload_image():
+    if 'image' not in request.files:
+        return jsonify({"error": "No image file provided"}), 400
+
+    file = request.files['image']
+
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+    image = Image.open(io.BytesIO(file.read()))
+    caption = llm.generate_caption(image)
+    return jsonify({"caption": caption})
+
+
 
 
 if __name__ == '__main__':
