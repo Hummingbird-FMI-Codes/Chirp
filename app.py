@@ -22,8 +22,8 @@ def generateCaptionTest():
     imagePath = request.get_json()["imagePath"]
     if not imagePath:
         abort(400)
-    caption = llm.generate_caption_from_path(imagePath)
-    return jsonify({"caption": caption})
+    label = llm.get_label_from_caption(imagePath)
+    return jsonify({"label": label})
 
 @app.route('/image', methods=["POST"])
 def upload_image():
@@ -39,17 +39,18 @@ def upload_image():
         )
     except (ValidationError, ValueError) as e:
         return jsonify({"error": "Invalid input", "details": str(e)}), 400
-    
+
+    label = llm.get_label(image)
     response = requests.post("http://localhost:3000/animal-data", json={
         "timestamp": data.timestamp,
         "lat": data.lat,
         "lng": data.lng,
-        "specimenName": "unknown"
+        "label": label,
     })
 
     res=None
     code=None
-    
+
     if response.status_code == 201:
         res = jsonify({"message": "File processed successfully", "external_response": response.json()})
         code = 201
@@ -58,21 +59,6 @@ def upload_image():
         code = 500
     res.headers.add('Access-Control-Allow-Origin', '*')
     return res, code
-
-
-@app.route('/upload-image', methods=['POST'])
-def upload_image():
-    if 'image' not in request.files:
-        return jsonify({"error": "No image file provided"}), 400
-
-    file = request.files['image']
-
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-    image = Image.open(io.BytesIO(file.read()))
-    caption = llm.generate_caption(image)
-    return jsonify({"caption": caption})
-
 
 
 
