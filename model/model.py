@@ -1,6 +1,7 @@
 from PIL import Image
 from transformers import AutoProcessor, AutoModelForCausalLM
 
+prompt = "NOTHING"
 
 class ImageCaptioningLLM:
     MODEL_NAME = "trained_florence2"
@@ -15,8 +16,8 @@ class ImageCaptioningLLM:
         return self.generate_caption(image)
 
     def generate_caption(self, image: Image) -> str:
-        inputs = self.processor(images=image, return_tensors="pt").to("cpu")
-        output = self.model.generate(**inputs, max_length=50, num_return_sequences=1)
+        inputs = self.processor(images=image, text=prompt, return_tensors="pt").to("cpu")
+        output = self.model.generate(**inputs, max_length=200, num_return_sequences=1)
         return self.processor.decode(output[0], skip_special_tokens=True)
 
 # Test

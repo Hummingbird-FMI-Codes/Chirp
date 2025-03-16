@@ -9,3 +9,4 @@ peft
 einops
 scikit-learn
 pandas~=2.2.3
+pydantic
