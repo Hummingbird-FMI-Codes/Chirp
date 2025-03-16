@@ -44,11 +44,18 @@ def upload_image():
         "lng": data.lng,
         "specimenName": "unknown"
     })
+
+    res=None
+    code=None
     
     if response.status_code == 201:
-        return jsonify({"message": "File processed successfully", "external_response": response.json()}), 200
+        res = jsonify({"message": "File processed successfully", "external_response": response.json()})
+        code = 201
     else:
-        return jsonify({"error": "Failed to process file", "external_response": response.text}), response.status_code
+        res = jsonify({"error": "Failed to process file", "external_response": response.text})
+        code = 500
+    res.headers.add('Access-Control-Allow-Origin', '*')
+    return res, code
 
 
 if __name__ == '__main__':
