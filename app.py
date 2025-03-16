@@ -29,8 +29,11 @@ def generateCaptionTest():
 def upload_image():
     if 'image' not in request.files:
         return jsonify({"error": "Image is required"}), 400
-    image = request.files['image']
+    file = request.files['image']
 
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+    image = Image.open(io.BytesIO(file.read())).convert("RGB")
     try:
         data = UploadImageDto(
             timestamp=request.form['timestamp'],
